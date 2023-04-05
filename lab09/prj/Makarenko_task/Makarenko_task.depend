@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1680715580 source:c:\users\777\makarenko-maksym-ki222\lab09\prj\makarenko_task\main.cpp
+	<iostream>
+	"ModulesMakarenko.h"
+	<iomanip>
+	<cmath>
+
+1680709354 c:\users\777\makarenko-maksym-ki222\lab09\prj\modulesmakarenko.h
+
