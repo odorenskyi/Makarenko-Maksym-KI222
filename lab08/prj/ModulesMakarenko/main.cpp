@@ -1,11 +1,268 @@
 #include <iostream>
 #include <cmath>
-using namespace std;
+#include <string>
+#include <algorithm>
+#include <fstream>
+#include <locale>
+#include <codecvt>
+#include "ModulesMakarenko.h"
 
 
+std::wstring readInputFile(const std::string& fileName) {
+    std::wifstream inputFile(fileName);
+    if (!inputFile) {
+        std::cerr << "Не вдалося відкрити файл " << fileName << std::endl;
+        return L"";
+    }
+    inputFile.imbue(std::locale(inputFile.getloc(), new std::codecvt_utf8_utf16<wchar_t>));
 
-double s_calculation(int x, int y, int z){
+    std::wstring inputText;
+    std::wstring line;
+    while (std::getline(inputFile, line)) {
+        inputText += line + L"\n";
+    }
+
+    inputFile.close();
+    return inputText;
+}
+
+void writeOutputFile(const std::string& fileName, const std::wstring& text) {
+    std::wofstream outputFile(fileName);
+    if (!outputFile) {
+        std::cerr << "Не вдалося відкрити файл " << fileName << std::endl;
+        return;
+    }
+    outputFile.imbue(std::locale(std::locale(), new std::codecvt_byname<wchar_t, char, std::mbstate_t>("uk_UA.CP1251")));
+
+    outputFile << text;
+
+    outputFile.close();
+}
+
+void appendResultsToFile(const std::string& fileName, double s, const std::string& binary) {
+    std::ofstream outputFile(fileName, std::ios::app);
+    if (!outputFile) {
+        std::cerr << "Не вдалося відкрити файл " << fileName << std::endl;
+        return;
+    }
+
+    outputFile << "Результати виконання функції s_calculation:" << std::endl;
+    outputFile << "s = " << s << std::endl;
+    outputFile << "b у двійковому коді: " << binary << std::endl;
+
+    time_t currentTime = std::time(nullptr);
+    tm* localTime = std::localtime(&currentTime);
+    int day = localTime->tm_mday;
+    int month = localTime->tm_mon + 1;
+    int year = localTime->tm_year + 1900;
+
+    outputFile << "Дата дозапису інформації: " << day << "/" << month << "/" << year << std::endl;
+
+    outputFile.close();
+}
+
+double toRadians(double angleInDegrees) {
+    double angleInRadians = angleInDegrees * M_PI / 180.0;
+    return angleInRadians;
+}
+
+double s_calculation(double x, double y, double z) {
+    x = toRadians(x);
+    y = toRadians(y);
+    z = toRadians(z);
     double s = 0;
-    s = z + M_PI *(((pow((2 * z + 1), 2) - sqrt(abs((y - (1/2) * z))))/(cos(z + y * z) + pow(x, 2))));
+    s = z + M_PI * (((std::pow((2 * z + 1), 2) - std::sqrt(std::abs((y - (1 / 2) * z))))) / (std::cos(z + y * z) + std::pow(x, 2)));
     return s;
 }
+
+std::string getBin(unsigned int decimalNumber) {
+    std::string binary = "";
+    while (decimalNumber > 0) {
+        int rem = decimalNumber % 2;
+        binary = std::to_string(rem) + binary;
+        decimalNumber /= 2;
+    }
+    return binary;
+}
+
+bool isVowel(wchar_t c) {
+    c = std::tolower(c, std::locale("uk_UA.UTF-8"));
+    return (c == L'а' || c == L'е' || c == L'є' || c == L'и' || c == L'і' || c == L'ї' || c == L'о' || c == L'у' || c == L'ю' || c == L'я');
+}
+
+std::wstring transliterateCharacter(wchar_t c) {
+    wchar_t lowercaseChar = std::tolower(c, std::locale("uk_UA.UTF-8"));
+    std::wstring result;
+    switch (lowercaseChar) {
+        case L'а':
+            result += (c == L'А') ? L"A" : L"a";
+            break;
+        case L'б':
+            result += (c == L'Б') ? L"B" : L"b";
+            break;
+        case L'в':
+            result += (c == L'В') ? L"V" : L"v";
+            break;
+        case L'г':
+            result += (c == L'Г') ? L"H" : L"h";
+            break;
+        case L'ґ':
+            result += (c == L'Ґ') ? L"G" : L"g";
+            break;
+        case L'д':
+            result += (c == L'Д') ? L"D" : L"d";
+            break;
+        case L'е':
+            result += (c == L'Е') ? L"E" : L"e";
+            break;
+        case L'є':
+            result += (c == L'Є') ? L"IE" : L"ie";
+            break;
+        case L'ж':
+            result += (c == L'Ж') ? L"ZH" : L"zh";
+            break;
+        case L'з':
+            result += (c == L'З') ? L"Z" : L"z";
+            break;
+        case L'и':
+            result += (c == L'И') ? L"Y" : L"y";
+            break;
+        case L'і':
+            result += (c == L'І') ? L"I" : L"i";
+            break;
+        case L'ї':
+            result += (c == L'Ї') ? L"YI" : L"yi";
+            break;
+        case L'й':
+            result += (c == L'Й') ? L"I" : L"i";
+            break;
+        case L'к':
+            result += (c == L'К') ? L"K" : L"k";
+            break;
+        case L'л':
+            result += (c == L'Л') ? L"L" : L"l";
+            break;
+        case L'м':
+            result += (c == L'М') ? L"M" : L"m";
+            break;
+        case L'н':
+            result += (c == L'Н') ? L"N" : L"n";
+            break;
+        case L'о':
+            result += (c == L'О') ? L"O" : L"o";
+            break;
+        case L'п':
+            result += (c == L'П') ? L"P" : L"p";
+            break;
+        case L'р':
+            result += (c == L'Р') ? L"R" : L"r";
+            break;
+        case L'с':
+            result += (c == L'С') ? L"S" : L"s";
+            break;
+        case L'т':
+            result += (c == L'Т') ? L"T" : L"t";
+            break;
+        case L'у':
+            result += (c == L'У') ? L"U" : L"u";
+            break;
+        case L'ф':
+            result += (c == L'Ф') ? L"F" : L"f";
+            break;
+        case L'х':
+            result += (c == L'Х') ? L"KH" : L"kh";
+            break;
+        case L'ц':
+            result += (c == L'Ц') ? L"TS" : L"ts";
+            break;
+        case L'ч':
+            result += (c == L'Ч') ? L"CH" : L"ch";
+            break;
+        case L'ш':
+            result += (c == L'Ш') ? L"SH" : L"sh";
+            break;
+        case L'щ':
+            result += (c == L'Щ') ? L"SHCH" : L"shch";
+            break;
+        case L'ь':
+            result += (c == L'Ь') ? L"'" : L"'";
+            break;
+        case L'ю':
+            result += (c == L'Ю') ? L"IU" : L"iu";
+            break;
+        case L'я':
+            result += (c == L'Я') ? L"IA" : L"ia";
+            break;
+        default:
+            result += c;
+            break;
+    }
+    return result;
+}
+
+std::wstring transliterate(const std::wstring& input) {
+    std::wstring result;
+    for (const auto& c : input) {
+        result += transliterateCharacter(c);
+    }
+    return result;
+}
+
+std::wstring readInputFile(const std::string& fileName) {
+    std::wifstream inputFile(fileName);
+    if (!inputFile) {
+        std::cerr << "Не вдалося відкрити файл " << fileName << std::endl;
+        return L"";
+    }
+    inputFile.imbue(std::locale(inputFile.getloc(), new std::codecvt_utf8_utf16<wchar_t>));
+
+    std::wstring inputText;
+    std::wstring line;
+    while (std::getline(inputFile, line)) {
+        inputText += line + L"\n";
+    }
+
+    inputFile.close();
+    return inputText;
+}
+
+void writeOutputFile(const std::string& fileName, const std::wstring& text) {
+    std::wofstream outputFile(fileName);
+    if (!outputFile) {
+        std::cerr << "Не вдалося відкрити файл " << fileName << std::endl;
+        return;
+    }
+    outputFile.imbue(std::locale(std::locale(), new std::codecvt_byname<wchar_t, char, std::mbstate_t>("uk_UA.CP1251")));
+
+    outputFile << text;
+
+    outputFile.close();
+}
+
+void processFile(const std::string& inputFileName, const std::string& outputFileName, const std::string& input10_3FileName) {
+    std::wstring inputText = readInputFile(inputFileName);
+    writeOutputFile(outputFileName, transliterate(inputText));
+
+    std::wstring input10_3Text = readInputFile(input10_3FileName);
+    std::wstringstream inputStream(input10_3Text);
+
+    std::wofstream outputFile(outputFileName, std::ios::app);
+    if (!outputFile) {
+        std::cerr << "Не вдалося відкрити файл " << outputFileName << std::endl;
+        return;
+    }
+    outputFile.imbue(std::locale(outputFile.getloc(), new std::codecvt_utf8_utf16<wchar_t>));
+
+    double x, y, z, b;
+    while (inputStream >> x >> y >> z >> b) {
+        double s = s_calculation(x, y, z);
+        std::string binary = getBin(static_cast<unsigned int>(b));
+        outputFile << L"s = " << s << L", b (binary) = " << std::wstring(binary.begin(), binary.end()) << std::endl;
+    }
+
+    outputFile.close();
+}
+
+
+
+
