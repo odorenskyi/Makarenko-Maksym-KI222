@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1685396223 source:c:\users\777\makarenko-maksym-ki222\lab10\prj\testdriver\main.cpp
+	<iostream>
+	<fstream>
+	<string>
+	<vector>
+	"ModulesMakarenko.h"
+
+1685394815 c:\users\777\makarenko-maksym-ki222\lab08\prj\modulesmakarenko.h
+	<string>
+
